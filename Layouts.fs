@@ -1,4 +1,4 @@
-namespace ServerSpa
+namespace SpicySpa
 
 open Feliz.ViewEngine
 open type Feliz.ViewEngine.prop

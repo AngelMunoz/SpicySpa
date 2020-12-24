@@ -1,4 +1,4 @@
-namespace ServerSpa.Pages
+namespace SpicySpa.Pages
 
 open Microsoft.AspNetCore.Antiforgery
 open Microsoft.AspNetCore.Http
@@ -12,8 +12,8 @@ open type Feliz.ViewEngine.prop
 
 open FSharp.Control.Tasks
 
-open ServerSpa
-open ServerSpa.Components
+open SpicySpa
+open SpicySpa.Components
 
 [<RequireQualifiedAccess>]
 module Profile =
@@ -89,7 +89,7 @@ module Profile =
                             infoPartial
                                 { _id = 1
                                   name = "Sample"
-                                  email = "sample@serverspa.com" }
+                                  email = "sample@SpicySpa.com" }
                                 None
                         ]
                     ]
@@ -123,7 +123,7 @@ module Profile =
                             (infoPartial
                                 { _id = 1
                                   name = "Sample"
-                                  email = "sample@serverspa.com" }
+                                  email = "sample@SpicySpa.com" }
                                 flash)
                             next
                             ctx
@@ -178,7 +178,7 @@ module Profile =
                                                 type' "email"
                                                 name "email"
                                                 id "email"
-                                                value "sample@serverspa.com"
+                                                value "sample@SpicySpa.com"
                                             ]
                                         ]
                                     ]

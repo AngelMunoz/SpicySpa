@@ -1,4 +1,4 @@
-namespace ServerSpa
+namespace SpicySpa
 
 [<CLIMutable>]
 type LoginPayload = { email: string; password: string }

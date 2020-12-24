@@ -1,4 +1,4 @@
-﻿namespace ServerSpa
+﻿namespace SpicySpa
 
 open FSharp.Control.Tasks
 
@@ -12,7 +12,7 @@ open Saturn.PipelineHelpers
 open Saturn.CSRF
 open Saturn.Endpoint
 
-open ServerSpa.Pages
+open SpicySpa.Pages
 
 module Program =
     let setTurbolinksLocationHeader: HttpHandler =

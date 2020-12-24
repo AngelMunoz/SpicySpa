@@ -1,4 +1,4 @@
-namespace ServerSpa.Pages
+namespace SpicySpa.Pages
 
 open Microsoft.AspNetCore.Antiforgery
 open Microsoft.AspNetCore.Authentication
@@ -13,8 +13,8 @@ open type Feliz.ViewEngine.prop
 
 open FSharp.Control.Tasks
 
-open ServerSpa
-open ServerSpa.Components
+open SpicySpa
+open SpicySpa.Components
 open System.Security.Claims
 open Microsoft.AspNetCore.Authentication.Cookies
 

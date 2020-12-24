@@ -1,4 +1,4 @@
-# ServerSpa
+# SpicySpa
 
 Just a little sample using Saturn, Turbolinks and htmx
 
