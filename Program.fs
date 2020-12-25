@@ -86,7 +86,7 @@ module Program =
                     cfg.HeaderName <- "XSRF-TOKEN"
                     cfg.Cookie.Name <- "XSRF-TOKEN")
 
-            use_cookies_authentication "http://localhost:5001"
+            use_cookies_authentication "http://localhost:5000"
             use_static "wwwroot"
             use_developer_exceptions
             use_gzip

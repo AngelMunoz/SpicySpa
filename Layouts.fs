@@ -43,6 +43,9 @@ module Layouts =
     let Default (main: string) =
         Custom "Server Spa" main None None None None
 
+    let DefaultWithScripts (main: string) (scripts: ResizeArray<string>) =
+        Custom "Server Spa" main None None (Some scripts) None
+
     let Forbidden =
         fun next ctx ->
             task {

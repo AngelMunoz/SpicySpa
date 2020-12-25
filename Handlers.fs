@@ -8,7 +8,6 @@ open Microsoft.AspNetCore.Http
 
 open Giraffe
 
-open Saturn.Auth
 open Scriban
 
 open FSharp.Control.Tasks
@@ -216,7 +215,10 @@ module Profile =
                 let! tpl = Helpers.getTemplate ("./Pages/Profile.html")
                 let! content = tpl.RenderAsync({| content = partial |})
 
-                let! html = Layouts.Default content
+                let! html =
+                    Layouts.DefaultWithScripts
+                        content
+                        (ResizeArray([ """<script src="WebComponents/Sample.js" type="module"></script>""" ]))
 
                 return! Helpers.htmx html next ctx
             }
