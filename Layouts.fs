@@ -1,73 +1,52 @@
 namespace SpicySpa
 
-open Feliz.ViewEngine
-open type Feliz.ViewEngine.prop
+open Scriban
+open FSharp.Control.Tasks
 
 [<RequireQualifiedAccess>]
 module Layouts =
 
     let Custom (title: string)
-               (main: ReactElement)
-               (header: ReactElement option)
-               (footer: ReactElement option)
-               (scripts: ReactElement list option)
-               (stylesheets: ReactElement list option)
+               (main: string)
+               (header: string option)
+               (footer: string option)
+               (scripts: ResizeArray<string> option)
+               (stylesheets: ResizeArray<string> option)
                =
+        task {
+            let! header =
+                task {
+                    let! def = Components.DefaultNavbar
+                    return defaultArg header def
+                }
 
-        let header =
-            defaultArg header Components.DefaultNavbar
+            let! footer =
+                task {
+                    let! def = Components.DefaultFooter
+                    return defaultArg footer def
+                }
 
-        let footer =
-            defaultArg footer Components.DefaultFooter
+            let scripts = defaultArg scripts (ResizeArray())
+            let stylesheets = defaultArg stylesheets (ResizeArray())
+            let! template = Helpers.getTemplate ("./Layouts/Default.html")
 
-        let scripts = defaultArg scripts []
-        let stylesheets = defaultArg stylesheets []
+            return!
+                template.RenderAsync
+                    {| title = title
+                       header = header
+                       main = main
+                       footer = footer
+                       stylesheets = stylesheets
+                       scripts = scripts |}
+        }
 
-        Html.html [
-            Html.head [
-                Html.meta [
-                    charset "utf-8"
-                    name "viewport"
-                    content "width=device-width, initial-scale=1"
-                ]
-                Html.title title
-                Html.link [
-                    rel "stylesheet"
-                    href "https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css"
-                ]
-                Html.link [
-                    rel "stylesheet"
-                    href "index.css"
-                ]
-                yield! stylesheets
-                Html.script [
-                    src "https://polyfill.io/v3/polyfill.min.js?features=es2015%2Ces2016%2Ces2017%2Ces2018%2Ces2019"
-                ]
-                Html.script [
-                    src "https://unpkg.com/turbolinks@5.2.0/dist/turbolinks.js"
-                ]
-            ]
-            Html.body [
-                header
-                Html.main [
-                    className "app-main"
-                    children main
-                ]
-                footer
-                Html.script [
-                    src "https://unpkg.com/htmx.org@1.0.2/dist/htmx.min.js"
-                ]
-                Html.script [ src "index.js" ]
-                yield! scripts
-            ]
-        ]
-
-    let Default (main: ReactElement) =
+    let Default (main: string) =
         Custom "Server Spa" main None None None None
 
     let Forbidden =
         fun next ctx ->
-            let content =
-                Components.Flash "You're not allowed to access this resouce" None
-
-            Helpers.htmx (Default content) next ctx
+            task {
+                let! content = Components.Flash "You're not allowed to access this resouce" None
+                let! content = Default content
+                return! Helpers.htmx content next ctx
+            }

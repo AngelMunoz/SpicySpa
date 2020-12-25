@@ -12,7 +12,7 @@ open Saturn.PipelineHelpers
 open Saturn.CSRF
 open Saturn.Endpoint
 
-open SpicySpa.Pages
+open SpicySpa.Handlers
 
 module Program =
     let setTurbolinksLocationHeader: HttpHandler =

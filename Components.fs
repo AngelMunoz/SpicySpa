@@ -1,10 +1,7 @@
 namespace SpicySpa
 
-open Feliz.ViewEngine
-
-open type Feliz.ViewEngine.prop
-
-
+open Scriban
+open FSharp.Control.Tasks
 
 module Components =
     type ActionType =
@@ -27,106 +24,72 @@ module Components =
             | Default -> ""
 
     let Flash (msg: string) (action: ActionType option) =
-        let action = defaultArg action Default
+        task {
+            let action = defaultArg action Default
+            let! template = Helpers.getTemplate ("./Components/Flash.html")
 
-        Html.div [
-            classes [
-                "notification"
-                action.AsString()
-            ]
-            prop.children [
-                Html.button [ prop.className "delete" ]
-                Html.text msg
-            ]
-        ]
-
-
-    let CardHeader (title: string) (icon: ReactElement option) =
-        let icon = defaultArg icon Html.none
-
-        Html.header [
-            className "card-header"
-            children [
-                Html.p [
-                    className "card-header-title"
-                    text title
-                ]
-                icon
-            ]
-        ]
-
-    let CardFooter (content: ReactElement) =
-        Html.footer [
-            className "card-footer"
-            children [ content ]
-        ]
-
-    let CardActionsFooter (actions: ReactElement list) =
-        Html.footer [
-            className "card-footer"
-            children actions
-        ]
+            return!
+                template.RenderAsync
+                    {| message = msg
+                       action = action.AsString() |}
+        }
 
 
 
-    let CustomCard (content: ReactElement) (header: ReactElement option) (footer: ReactElement option) =
+    let CardHeader (title: string) (icon: string option) =
+        let icon = defaultArg icon null
 
-        let header = defaultArg header Html.none
-        let footer = defaultArg footer Html.none
+        task {
+            let! template = Helpers.getTemplate ("./Components/CardHeader.html")
+            return! template.RenderAsync {| title = title; icon = icon |}
+        }
 
-        let content =
-            Html.div [
-                className "card-content"
-                children [ content ]
-            ]
+    let CardFooter (content: string) =
+        task {
+            let! template = Helpers.getTemplate ("./Components/CardFooter.html")
+            return! template.RenderAsync {| content = content |}
+        }
 
-        Html.div [
-            className "card"
-            children [ header; content; footer ]
-        ]
+    let CardActionsFooter (actions: ResizeArray<string>) =
+        task {
+            let! template = Helpers.getTemplate ("./Components/CardActionsFooter.html")
+            return! template.RenderAsync {| actions = actions |}
+        }
 
-    let DefaultCard (content: ReactElement) = CustomCard content None None
+
+
+    let CustomCard (content: string) (header: string option) (footer: string option) =
+
+        let header = defaultArg header null
+        let footer = defaultArg footer null
+
+        task {
+            let! template = Helpers.getTemplate ("./Components/Card.html")
+
+            return!
+                template.RenderAsync
+                    {| content = content
+                       header = header
+                       footer = footer |}
+
+        }
+
+    let DefaultCard (content: string) = CustomCard content None None
 
 
     let DefaultFooter =
-        Html.footer [
-            className "flex flex-shrink"
-        ]
+        task {
+            let! template = Helpers.getTemplate ("./Components/DefaultFooter.html")
+            return! template.RenderAsync()
+        }
 
-    let Navbar (navItems: ReactElement list option) =
-        let navItems = defaultArg navItems []
 
-        Html.nav [
-            ariaLabel "main navigation"
-            className "navbar"
-            role "navigation"
-            children [
-                Html.section [
-                    className "navbar-brand"
-                    children [
-                        Html.a [
-                            className "navbar-item"
-                            href "/"
-                            text "Server Spa"
-                        ]
-                        Html.a [
-                            ariaExpanded false
-                            ariaLabel "menu"
-                            className "navbar-burger"
-                            role "button"
-                            children [
-                                Html.span [ ariaHidden true ]
-                                Html.span [ ariaHidden true ]
-                                Html.span [ ariaHidden true ]
-                            ]
-                        ]
-                    ]
-                ]
-                Html.section [
-                    classes [ "navbar-menu" ]
-                    children navItems
-                ]
-            ]
-        ]
+    let Navbar (navitems: ResizeArray<string> option) =
+        let navitems = defaultArg navitems (ResizeArray())
+
+        task {
+            let! template = Helpers.getTemplate ("./Components/Navbar.html")
+            return! template.RenderAsync {| navitems = navitems |}
+        }
 
     let DefaultNavbar = Navbar None
