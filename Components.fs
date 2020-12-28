@@ -3,30 +3,37 @@ namespace SpicySpa
 open Scriban
 open FSharp.Control.Tasks
 
-module Components =
-    type ActionType =
-        | Primary
-        | Link
-        | Info
-        | Success
-        | Warning
-        | Danger
-        | Default
+[<RequireQualifiedAccess>]
+type ActionType =
+    | Primary
+    | Link
+    | Info
+    | Success
+    | Warning
+    | Danger
+    | Default
+    member this.AsString() =
+        match this with
+        | Primary -> "is-primary"
+        | Link -> "is-link"
+        | Info -> "is-info"
+        | Success -> "is-success"
+        | Warning -> "is-warning"
+        | Danger -> "is-danger"
+        | Default -> ""
 
-        member this.AsString() =
-            match this with
-            | Primary -> "is-primary"
-            | Link -> "is-link"
-            | Info -> "is-info"
-            | Success -> "is-success"
-            | Warning -> "is-warning"
-            | Danger -> "is-danger"
-            | Default -> ""
+[<RequireQualifiedAccess>]
+module Components =
+
 
     let Flash (msg: string) (action: ActionType option) =
         task {
-            let action = defaultArg action Default
-            let! template = Helpers.getTemplate ("./Components/Flash.html")
+            let action = defaultArg action ActionType.Default
+
+            let! template =
+                let cmp = Helpers.Component "Flash"
+                let path = Helpers.getHtmlPath cmp
+                Helpers.getTemplate path
 
             return!
                 template.RenderAsync
@@ -40,19 +47,31 @@ module Components =
         let icon = defaultArg icon null
 
         task {
-            let! template = Helpers.getTemplate ("./Components/CardHeader.html")
+            let! template =
+                let cmp = Helpers.Component "CardHeader"
+                let path = Helpers.getHtmlPath cmp
+                Helpers.getTemplate path
+
             return! template.RenderAsync {| title = title; icon = icon |}
         }
 
     let CardFooter (content: string) =
         task {
-            let! template = Helpers.getTemplate ("./Components/CardFooter.html")
+            let! template =
+                let cmp = Helpers.Component "CardFooter"
+                let path = Helpers.getHtmlPath cmp
+                Helpers.getTemplate path
+
             return! template.RenderAsync {| content = content |}
         }
 
     let CardActionsFooter (actions: ResizeArray<string>) =
         task {
-            let! template = Helpers.getTemplate ("./Components/CardActionsFooter.html")
+            let! template =
+                let cmp = Helpers.Component "CardActionsFooter"
+                let path = Helpers.getHtmlPath cmp
+                Helpers.getTemplate path
+
             return! template.RenderAsync {| actions = actions |}
         }
 
@@ -64,7 +83,10 @@ module Components =
         let footer = defaultArg footer null
 
         task {
-            let! template = Helpers.getTemplate ("./Components/Card.html")
+            let! template =
+                let cmp = Helpers.Component "Card"
+                let path = Helpers.getHtmlPath cmp
+                Helpers.getTemplate path
 
             return!
                 template.RenderAsync
@@ -79,7 +101,11 @@ module Components =
 
     let DefaultFooter =
         task {
-            let! template = Helpers.getTemplate ("./Components/DefaultFooter.html")
+            let! template =
+                let cmp = Helpers.Component "DefaultFooter"
+                let path = Helpers.getHtmlPath cmp
+                Helpers.getTemplate path
+
             return! template.RenderAsync()
         }
 
@@ -88,7 +114,11 @@ module Components =
         let navitems = defaultArg navitems (ResizeArray())
 
         task {
-            let! template = Helpers.getTemplate ("./Components/Navbar.html")
+            let! template =
+                let cmp = Helpers.Component "Navbar"
+                let path = Helpers.getHtmlPath cmp
+                Helpers.getTemplate path
+
             return! template.RenderAsync {| navitems = navitems |}
         }
 

@@ -14,7 +14,6 @@ open FSharp.Control.Tasks
 
 
 open SpicySpa
-open SpicySpa.Components
 
 
 [<RequireQualifiedAccess>]
@@ -22,7 +21,12 @@ module Auth =
 
     let private authForm (isLogin: bool) =
         task {
-            let! template = Helpers.getTemplate ("./Components/AuthForm.html")
+            let! template =
+                let partial = Helpers.Partial("Auth", "AuthForm")
+
+                let path = Helpers.getHtmlPath partial
+                Helpers.getTemplate path
+
             return! template.RenderAsync({| isLogin = isLogin |})
         }
 
@@ -35,7 +39,11 @@ module Auth =
                     let antiforgeryTpl =
                         Helpers.csrfInputWithSideEffects antiforgery ctx
 
-                    let! contentTemplate = Helpers.getTemplate ("./Pages/Auth.html")
+                    let! contentTemplate =
+                        let page = Helpers.Page("Auth", "Auth")
+                        let path = Helpers.getHtmlPath page
+                        Helpers.getTemplate path
+
                     let! form = authForm true
 
                     let! contentTpl =
@@ -45,12 +53,12 @@ module Auth =
 
 
                     let! html =
-                        let scripts =
+                        let styles =
                             ResizeArray([ """<link rel="stylesheet" href="auth.css">""" ])
 
-                        Layouts.Custom "Welcome" contentTpl None None None (Some scripts)
+                        Layouts.Custom "Welcome" contentTpl None None (Some styles) None
 
-                    return! Helpers.htmx html next ctx
+                    return! htmlString html next ctx
                 else
                     return! redirectTo false "/profile" next ctx
 
@@ -65,7 +73,11 @@ module Auth =
                     let antiforgeryTpl =
                         Helpers.csrfInputWithSideEffects antiforgery ctx
 
-                    let! contentTemplate = Helpers.getTemplate ("./Pages/Auth.html")
+                    let! contentTemplate =
+                        let page = Helpers.Page("Auth", "Auth")
+                        let path = Helpers.getHtmlPath page
+                        Helpers.getTemplate path
+
                     let! form = authForm false
 
                     let! contentTpl =
@@ -75,12 +87,12 @@ module Auth =
 
 
                     let! html =
-                        let scripts =
+                        let styles =
                             ResizeArray([ """<link rel="stylesheet" href="auth.css">""" ])
 
-                        Layouts.Custom "Welcome" contentTpl None None None (Some scripts)
+                        Layouts.Custom "Welcome" contentTpl None None (Some styles) None
 
-                    return! Helpers.htmx html next ctx
+                    return! htmlString html next ctx
                 else
                     return! redirectTo false "/profile" next ctx
 
@@ -111,7 +123,11 @@ module Auth =
                     let antiforgeryTpl =
                         Helpers.csrfInputWithSideEffects antiforgery ctx
 
-                    let! contentTemplate = Helpers.getTemplate ("./Pages/Auth.html")
+                    let! contentTemplate =
+                        let page = Helpers.Page("Auth", "Auth")
+                        let path = Helpers.getHtmlPath page
+                        Helpers.getTemplate path
+
                     let! form = authForm false
                     let! flash = Components.Flash err None
 
@@ -121,7 +137,7 @@ module Auth =
                                AuthForm = form
                                flash = flash |}
 
-                    return! Helpers.htmx contentTpl next ctx
+                    return! htmlString contentTpl next ctx
             }
 
     let ProcessSignup =
@@ -149,7 +165,11 @@ module Auth =
                     let antiforgeryTpl =
                         Helpers.csrfInputWithSideEffects antiforgery ctx
 
-                    let! contentTemplate = Helpers.getTemplate ("./Pages/Auth.html")
+                    let! contentTemplate =
+                        let page = Helpers.Page("Auth", "Auth")
+                        let path = Helpers.getHtmlPath page
+                        Helpers.getTemplate path
+
                     let! form = authForm false
                     let! flash = Components.Flash err None
 
@@ -159,7 +179,7 @@ module Auth =
                                AuthForm = form
                                flash = flash |}
 
-                    return! Helpers.htmx contentTpl next ctx
+                    return! htmlString contentTpl next ctx
             }
 
 
@@ -168,11 +188,17 @@ module Profile =
     let private infoPartial (user: User) (flash: string option) =
         task {
             let flash = defaultArg flash null
-            let! cardHeader = CardHeader "My Profile" None
+            let! cardHeader = Components.CardHeader "My Profile" None
 
             let! cardContent =
                 task {
-                    let! template = Helpers.getTemplate ("./Components/ProfileInfo.html")
+                    let path =
+                        let kind =
+                            Helpers.HtmlKind.Partial("Profile", "ProfileInfo")
+
+                        Helpers.getHtmlPath kind
+
+                    let! template = Helpers.getTemplate (path)
                     return! template.RenderAsync(user)
                 }
 
@@ -188,7 +214,7 @@ module Profile =
 
                 Components.CardActionsFooter actions
 
-            let! content = CustomCard cardContent (cardHeader |> Some) (footer |> Some)
+            let! content = Components.CustomCard cardContent (cardHeader |> Some) (footer |> Some)
 
             let tpl =
                 Template.Parse
@@ -212,7 +238,11 @@ module Profile =
                           email = "sample@SpicySpa.com" }
                         None
 
-                let! tpl = Helpers.getTemplate ("./Pages/Profile.html")
+                let! tpl =
+                    let page = Helpers.Page("Profile", "Profile")
+                    let path = Helpers.getHtmlPath page
+                    Helpers.getTemplate path
+
                 let! content = tpl.RenderAsync({| content = partial |})
 
                 let! html =
@@ -220,7 +250,7 @@ module Profile =
                         content
                         (ResizeArray([ """<script src="WebComponents/Sample.js" type="module"></script>""" ]))
 
-                return! Helpers.htmx html next ctx
+                return! htmlString html next ctx
             }
 
     let UserInfoPartial =
@@ -239,9 +269,9 @@ module Profile =
 
                     let tpl = Template.Parse(partial)
                     let! content = tpl.RenderAsync()
-                    return! Helpers.htmx content next ctx
+                    return! htmlString content next ctx
                 | Error err ->
-                    let! flash = Flash err (Some ActionType.Warning)
+                    let! flash = Components.Flash err (Some ActionType.Warning)
 
                     let! partial =
                         infoPartial
@@ -252,7 +282,7 @@ module Profile =
 
                     let tpl = Template.Parse(partial)
                     let! content = tpl.RenderAsync()
-                    return! Helpers.htmx content next ctx
+                    return! htmlString content next ctx
             }
 
     let EditUserInfoPartial =
@@ -260,11 +290,17 @@ module Profile =
             task {
                 let antiforgery = ctx.GetService<IAntiforgery>()
 
-                let! cardHeader = CardHeader "Update My Profile" None
+                let! cardHeader = Components.CardHeader "Update My Profile" None
 
                 let! cardContent =
                     task {
-                        let! tpl = Helpers.getTemplate ("./Components/ProfileForm.html")
+                        let! tpl =
+                            let page =
+                                Helpers.Partial("Profile", "ProfileForm")
+
+                            let path = Helpers.getHtmlPath page
+                            Helpers.getTemplate path
+
                         return! tpl.RenderAsync()
                     }
 
@@ -273,30 +309,30 @@ module Profile =
                         ResizeArray(
                             [ """
                             <a
-                                class="card-footer-item"
-                                hx-post="/profile/save"
-                                hx-swap="outerHTML"
-                                hx-include="#editform"
-                                hx-target="#editpartial">
+                              class="card-footer-item"
+                              hx-post="/profile/save"
+                              hx-swap="outerHTML"
+                              hx-include="#editform"
+                              hx-target="#editpartial">
                                 Save
                             </a>
                             """ ]
                         )
 
-                    CardActionsFooter actions
+                    Components.CardActionsFooter actions
 
-                let! card = CustomCard cardContent (Some cardHeader) (Some footer)
+                let! card = Components.CustomCard cardContent (Some cardHeader) (Some footer)
 
                 let! html =
                     let template =
                         $"""
                          <article id="editpartial">
-                            %s{Helpers.csrfInputWithSideEffects antiforgery ctx}
-                            %s{card}
+                           %s{Helpers.csrfInputWithSideEffects antiforgery ctx}
+                           %s{card}
                          </article>
                          """
 
                     Template.Parse(template).RenderAsync()
 
-                return! Helpers.htmx html next ctx
+                return! htmlString html next ctx
             }

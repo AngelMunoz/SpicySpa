@@ -2,6 +2,7 @@ namespace SpicySpa
 
 open Scriban
 open FSharp.Control.Tasks
+open Giraffe.ResponseWriters
 
 [<RequireQualifiedAccess>]
 module Layouts =
@@ -28,7 +29,11 @@ module Layouts =
 
             let scripts = defaultArg scripts (ResizeArray())
             let stylesheets = defaultArg stylesheets (ResizeArray())
-            let! template = Helpers.getTemplate ("./Layouts/Default.html")
+
+            let! template =
+                let layout = Helpers.Layout "Default"
+                let path = Helpers.getHtmlPath layout
+                Helpers.getTemplate path
 
             return!
                 template.RenderAsync
@@ -51,5 +56,5 @@ module Layouts =
             task {
                 let! content = Components.Flash "You're not allowed to access this resouce" None
                 let! content = Default content
-                return! Helpers.htmx content next ctx
+                return! htmlString content next ctx
             }
