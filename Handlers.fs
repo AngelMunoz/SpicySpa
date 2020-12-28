@@ -471,3 +471,28 @@ module Profile =
 
                 return! htmlString html next ctx
             }
+
+
+[<RequireQualifiedAccess>]
+module Products =
+
+    let Index =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let (page, limit) = Helpers.extractPagination ctx
+
+                let! products = Products.FindProducts page limit
+                let! tpl = Helpers.getTemplate (Helpers.getHtmlPath (Helpers.Page("Products", "Products")))
+
+                let serialized =
+                    Helpers.JsonSerializer.SerializeToString products
+
+                let! content = tpl.RenderAsync({| products = serialized |})
+
+                let! html =
+                    Layouts.DefaultWithScripts
+                        content
+                        (ResizeArray([ """<script src="WebComponents/Products.js" type="module"></script>""" ]))
+
+                return! htmlString html next ctx
+            }

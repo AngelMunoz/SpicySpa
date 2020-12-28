@@ -26,3 +26,11 @@ type UserDTO =
 
 [<CLIMutable>]
 type EditFormPayload = { name: string }
+
+
+type Product =
+    { _id: ObjectId
+      name: string
+      price: decimal }
+
+type PaginatedResult<'T> = { list: seq<'T>; count: int }
