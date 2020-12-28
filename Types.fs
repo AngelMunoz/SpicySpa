@@ -1,5 +1,7 @@
 namespace SpicySpa
 
+open MongoDB.Bson
+
 [<CLIMutable>]
 type LoginPayload = { email: string; password: string }
 
@@ -11,9 +13,16 @@ type SignupPayload =
 
 [<CLIMutable>]
 type User =
-    { _id: int
+    { _id: ObjectId
+      name: string
+      email: string
+      password: string }
+
+[<CLIMutable>]
+type UserDTO =
+    { _id: ObjectId
       name: string
       email: string }
 
 [<CLIMutable>]
-type UserDTO = { name: string; email: string }
+type EditFormPayload = { name: string }
