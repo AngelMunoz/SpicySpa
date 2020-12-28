@@ -1,6 +1,7 @@
 namespace SpicySpa
 
 open System
+open System.Threading.Tasks
 
 open FSharp.Control.Tasks
 
@@ -8,6 +9,7 @@ open MongoDB.Bson
 open MongoDB.Driver
 
 open Mondocks.Queries
+open Mondocks.Aggregation
 open Mondocks.Types
 
 open BCrypt.Net
@@ -27,7 +29,7 @@ module Database =
     let private UsersCol = "spc_users"
 
     [<Literal>]
-    let private Todos = "spc_todos"
+    let private ProductsCol = "spc_products"
 
     let db =
         lazy (MongoClient(dburl).GetDatabase(DbName))
@@ -107,3 +109,31 @@ module Database =
                 update UsersCol { updates [ updateVal ] }
 
             db.Value.RunCommandAsync<UpdateResult>(JsonCommand updatePwCmd)
+
+    [<RequireQualifiedAccess>]
+    module Products =
+
+        let FindProducts (page: int) (amount: int): Task<PaginatedResult<Product>> =
+            task {
+                let queryFilter = {|  |}
+
+                let q =
+                    find ProductsCol {
+                        filter query
+                        limit amount
+                        skip ((page - 1) * amount)
+                    }
+
+                let countCmd =
+                    count {
+                        collection ProductsCol
+                        query queryFilter
+                    }
+
+                let! result = db.Value.RunCommandAsync<FindResult<Product>>(JsonCommand q)
+                let! countResult = db.Value.RunCommandAsync<CountResult>(JsonCommand countCmd)
+
+                return
+                    { list = result.cursor.firstBatch
+                      count = countResult.n }
+            }
