@@ -1,5 +1,10 @@
 <article>
     <h1>Sending static HTML</h1>
     <h2>Making it dynamic with web components on the front</h2>
-    <spc-products-list paginated='{{ products }}'></spc-products-list>
+    <spc-products-list paginated='{{ serialized }}'></spc-products-list>
+    <spc-products-list paginated='{{ with_count_only }}'>
+        {{ for product in items.list }}
+            <spc-product-list-item product='{{ product }}'></spc-product-list-item>
+        {{ end }}
+    </spc-products-list>
 </article>

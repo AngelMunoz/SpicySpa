@@ -487,7 +487,20 @@ module Products =
                 let serialized =
                     Helpers.JsonSerializer.SerializeToString products
 
-                let! content = tpl.RenderAsync({| products = serialized |})
+                let withCountOnly =
+                    Helpers.JsonSerializer.SerializeToString { products with list = [] }
+
+                let items =
+                    {| list =
+                           products.list
+                           |> Seq.map (fun item -> Helpers.JsonSerializer.SerializeToString item) |}
+
+                let! content =
+                    tpl.RenderAsync(
+                        {| serialized = serialized
+                           items = items
+                           withCountOnly = withCountOnly |}
+                    )
 
                 let! html =
                     Layouts.DefaultWithScripts
