@@ -19,10 +19,6 @@ open Scriban
 open SpicySpa
 open SpicySpa.Database
 
-
-
-
-
 [<RequireQualifiedAccess>]
 module Auth =
 
@@ -325,10 +321,20 @@ module Profile =
 
                     let! content = tpl.RenderAsync({| content = partial |})
 
+                    let! navbar =
+                        let items =
+                            ResizeArray([ """<a href="/products" class="navbar-menu-item">Products</a>""" ])
+
+                        Components.Navbar(Some items)
+
                     let! html =
-                        Layouts.DefaultWithScripts
+                        Layouts.Custom
+                            "Spicy Spa"
                             content
-                            (ResizeArray([ """<script src="WebComponents/Sample.js" type="module"></script>""" ]))
+                            (Some navbar)
+                            None
+                            (Some(ResizeArray([ """<script src="WebComponents/Sample.js" type="module"></script>""" ])))
+                            None
 
                     return! htmlString html next ctx
             }
@@ -463,9 +469,7 @@ module Profile =
                         $"""
                          <article id="editpartial">
                            %s{Helpers.csrfInputWithSideEffects antiforgery ctx}
-                           %s{card}
-                         </article>
-                         """
+                           %s{card}                         </article>                         """
 
                     Template.Parse(template).RenderAsync()
 
@@ -499,13 +503,34 @@ module Products =
                     tpl.RenderAsync(
                         {| serialized = serialized
                            items = items
-                           withCountOnly = withCountOnly |}
+                           withCountOnly = withCountOnly
+                           page = page
+                           limit = limit |}
                     )
 
+                let! navbar =
+                    let items =
+                        ResizeArray([ """<a href="/profile" class="navbar-menu-item">Profile</a>""" ])
+
+                    Components.Navbar(Some items)
+
                 let! html =
-                    Layouts.DefaultWithScripts
+                    Layouts.Custom
+                        "Spicy Spa"
                         content
-                        (ResizeArray([ """<script src="WebComponents/Products.js" type="module"></script>""" ]))
+                        (Some navbar)
+                        None
+                        (Some(ResizeArray([ """<script src="WebComponents/Products.js" type="module"></script>""" ])))
+                        None
 
                 return! htmlString html next ctx
+            }
+
+    let JsonProducts =
+        fun (next: HttpFunc) (ctx: HttpContext) ->
+            task {
+                let (page, limit) = Helpers.extractPagination ctx
+
+                let! products = Products.FindProducts page limit
+                return! json products next ctx
             }
